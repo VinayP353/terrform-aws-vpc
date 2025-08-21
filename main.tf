@@ -97,3 +97,26 @@ resource "aws_security_group" "web" {
   }
   tags = { Name = "tf-web-sg" }
 }
+
+data "aws_ami" "al2023" {
+  owners      = ["137112412989"]
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami                         = data.aws_ami.al2023.id
+  instance_type               = var.instance_type
+  subnet_id                   = values(aws_subnet.public)[0].id
+  vpc_security_group_ids      = [aws_security_group.web.id]
+  associate_public_ip_address = true
+  key_name                    = var.key_name
+  tags = { Name = "tf-web" }
+}
